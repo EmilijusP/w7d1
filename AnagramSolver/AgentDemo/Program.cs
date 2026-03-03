@@ -15,6 +15,7 @@ builder.AddOpenAIChatCompletion(
     apiKey: config["OpenAI:ApiKey"]!);
 
 builder.Plugins.AddFromType<TimePlugin>();
+builder.Plugins.AddFromType<FindAnagramsPlugin>();
 
 var kernel = builder.Build();
 

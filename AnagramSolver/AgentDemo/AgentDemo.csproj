@@ -14,4 +14,10 @@
     <PackageReference Include="Microsoft.SemanticKernel" Version="1.72.0" />
   </ItemGroup>
 
+  <ItemGroup>
+    <None Update="zodziai.txt">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+  </ItemGroup>
+
 </Project>
