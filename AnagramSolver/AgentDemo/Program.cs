@@ -4,6 +4,8 @@ using OpenAI.Chat;
 using Microsoft.SemanticKernel.ChatCompletion;
 using AgentDemo;
 using Microsoft.SemanticKernel.Connectors.OpenAI;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
 
 var config = new ConfigurationBuilder()
     .AddUserSecrets<Program>()
@@ -17,11 +19,18 @@ builder.AddOpenAIChatCompletion(
 builder.Plugins.AddFromType<TimePlugin>();
 builder.Plugins.AddFromType<FindAnagramsPlugin>();
 
+builder.Services.AddLogging(configure => configure.AddConsole().SetMinimumLevel(LogLevel.Trace));
+
 var kernel = builder.Build();
 
 var chatService = kernel.GetRequiredService<IChatCompletionService>();
 var history = new ChatHistory();
-history.AddSystemMessage("Tu esi draugiškas .NET asistentas.");
+history.AddSystemMessage(
+    "Tu esi protingas AI asistentas. " +
+    "Tavo specializacija: spręsti anagramas ir teikti informaciją apie laiką. " +
+    "Naudok turimus įrankius, kad pateiktum tikslius duomenis. " + 
+    "Jei ko nors nežinau, nemeluok ir sakyk kad nežinai. "
+);
 
 Console.WriteLine("Užduokite klausimą arba rašykite 'exit' norėdami baigti.");
 
