@@ -2,6 +2,8 @@
 using Microsoft.Extensions.Configuration;
 using OpenAI.Chat;
 using Microsoft.SemanticKernel.ChatCompletion;
+using AgentDemo;
+using Microsoft.SemanticKernel.Connectors.OpenAI;
 
 var config = new ConfigurationBuilder()
     .AddUserSecrets<Program>()
@@ -11,6 +13,8 @@ var builder = Kernel.CreateBuilder();
 builder.AddOpenAIChatCompletion(
     modelId: config["OpenAI:Model"]!,
     apiKey: config["OpenAI:ApiKey"]!);
+
+builder.Plugins.AddFromType<TimePlugin>();
 
 var kernel = builder.Build();
 
@@ -32,7 +36,8 @@ while (true)
 
     history.AddUserMessage(input);
 
-    var result = await chatService.GetChatMessageContentAsync(history, kernel: kernel);
+    var settings = new OpenAIPromptExecutionSettings { FunctionChoiceBehavior = FunctionChoiceBehavior.Auto() };
+    var result = await chatService.GetChatMessageContentAsync(history, kernel: kernel, executionSettings: settings);
 
     Console.WriteLine($"\nAsistentas: {result}\n");
     history.AddMessage(result.Role, result.Content ?? string.Empty);
