@@ -10,21 +10,21 @@ namespace AgentDemo
 {
     public class FindAnagramsPlugin
     {
+        private readonly string[] _wordRepository;
+
+        public FindAnagramsPlugin()
+        {
+            _wordRepository = File.Exists("zodziai.txt") ? File.ReadAllLines("zodziai.txt") : throw new Exception("Failed to read file.");
+        }
+
         [KernelFunction("FindAnagrams")]
         [Description("Finds anagrams for a given word.")]
         public string FindAnagrams(string word)
         {
-            var filePath = "zodziai.txt";
-            if (!File.Exists(filePath))
-            {
-                return "No anagrams found. (Failed to read data file)";
-            }
-
-            var words = File.ReadAllLines(filePath);
             var sortedWord = string.Concat(word.OrderBy(c => char.ToLowerInvariant(c)));
             var anagrams = new List<string>();
 
-            foreach (var w in words)
+            foreach (var w in _wordRepository)
             {
                 var cleanWord = w.Trim();
                 if (cleanWord.Length == word.Length && !string.Equals(cleanWord, word, StringComparison.OrdinalIgnoreCase))
