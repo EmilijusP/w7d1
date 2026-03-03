@@ -1,5 +1,7 @@
 ﻿using Microsoft.SemanticKernel;
 using Microsoft.Extensions.Configuration;
+using OpenAI.Chat;
+using Microsoft.SemanticKernel.ChatCompletion;
 
 var config = new ConfigurationBuilder()
     .AddUserSecrets<Program>()
@@ -12,7 +14,26 @@ builder.AddOpenAIChatCompletion(
 
 var kernel = builder.Build();
 
-// Paprastas LLM kvietimas
-var result = await kernel.InvokePromptAsync(
-    "Kas yra Semantic Kernel? Atsakyk 2 sakiniais.");
-Console.WriteLine(result);
+var chatService = kernel.GetRequiredService<IChatCompletionService>();
+var history = new ChatHistory();
+history.AddSystemMessage("Tu esi draugiškas .NET asistentas.");
+
+Console.WriteLine("Užduokite klausimą arba rašykite 'exit' norėdami baigti.");
+
+while (true)
+{
+    Console.Write("Vartotojas: ");
+    string? input = Console.ReadLine();
+
+    if (string.IsNullOrWhiteSpace(input) || input.ToLower() == "exit")
+    {
+        break;
+    }
+
+    history.AddUserMessage(input);
+
+    var result = await chatService.GetChatMessageContentAsync(history, kernel: kernel);
+
+    Console.WriteLine($"\nAsistentas: {result}\n");
+    history.AddMessage(result.Role, result.Content ?? string.Empty);
+}
