@@ -7,13 +7,11 @@ using Microsoft.Extensions.Options;
 using AnagramSolver.BusinessLogic.Factories;
 using AnagramSolver.BusinessLogic.Filters;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.SemanticKernel;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// Add services to the container.
-
 builder.Services.AddControllers();
-// Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 
 var settings = builder.Configuration.GetSection("Settings").Get<AppSettings>();
 builder.Services.AddSingleton<IAppSettings>(settings);
@@ -33,6 +31,12 @@ builder.Services.AddScoped<IFilterPipeline, FilterPipeline>();
 builder.Services.AddScoped<IAnagramSolver, AnagramSolverService>();
 builder.Services.AddScoped<IInputNormalization, InputNormalizationService>();
 builder.Services.AddScoped<IAnagramFinder, AnagramFinder>();
+
+builder.Services.AddKernel();
+builder.Services.AddOpenAIChatCompletion(
+    modelId: builder.Configuration["OpenAI:Model"]!,
+    apiKey: builder.Configuration["OpenAI:ApiKey"]!);
+builder.Services.AddScoped<IAiChatService, AiChatService>();
 
 builder.Services.AddGraphQLServer().AddQueryType<Query>();
 
