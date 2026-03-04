@@ -3,8 +3,6 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.AI;
 using AnagramSolver.Contracts.Models;
 
-// For more information on enabling Web API for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
-
 namespace AnagramSolver.Api.Controllers
 {
     [Route("api/ai/chat")]
@@ -36,7 +34,7 @@ namespace AnagramSolver.Api.Controllers
             var response = new Contracts.Models.ChatResponse
             {
                 Response = aiResponse,
-                sessionId = request.SessionId
+                SessionId = request.SessionId
             };
 
             return Ok(response);

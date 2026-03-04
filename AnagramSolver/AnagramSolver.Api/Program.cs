@@ -8,6 +8,7 @@ using AnagramSolver.BusinessLogic.Factories;
 using AnagramSolver.BusinessLogic.Filters;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.SemanticKernel;
+using AnagramSolver.BusinessLogic.Plugins;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -32,7 +33,13 @@ builder.Services.AddScoped<IAnagramSolver, AnagramSolverService>();
 builder.Services.AddScoped<IInputNormalization, InputNormalizationService>();
 builder.Services.AddScoped<IAnagramFinder, AnagramFinder>();
 
-builder.Services.AddKernel();
+builder.Services.AddScoped<Kernel>(sp =>
+{
+    var plugins = new KernelPluginCollection();
+    plugins.AddFromType<AnagramPlugin>(serviceProvider: sp);
+    return new Kernel(sp, plugins);
+});
+
 builder.Services.AddOpenAIChatCompletion(
     modelId: builder.Configuration["OpenAI:Model"]!,
     apiKey: builder.Configuration["OpenAI:ApiKey"]!);
