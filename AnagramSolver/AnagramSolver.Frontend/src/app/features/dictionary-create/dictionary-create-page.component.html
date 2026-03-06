@@ -17,14 +17,14 @@
   </form>
 
   @if (form.controls.word.touched && form.controls.word.hasError('required')) {
-    <p>Word is required.</p>
+    <p class="validation-error">Word is required.</p>
   }
 
   @if (successMessage) {
-    <p>{{ successMessage }}</p>
+    <p class="success-msg">{{ successMessage }}</p>
   }
 
   @if (errorMessage) {
-    <p>{{ errorMessage }}</p>
+    <p class="error-msg">{{ errorMessage }}</p>
   }
 </section>

@@ -8,19 +8,19 @@
   </form>
 
   @if (form.controls.word.touched && form.controls.word.hasError('required')) {
-    <p>Word is required.</p>
+    <p class="validation-error">Word is required.</p>
   }
 
   @if (form.controls.word.touched && form.controls.word.hasError('minlength')) {
-    <p>Word must be at least {{ minLength }} characters.</p>
+    <p class="validation-error">Word must be at least {{ minLength }} characters.</p>
   }
 
   @if (isLoading) {
-    <p>Loading anagrams...</p>
+    <p class="loading">Loading anagrams...</p>
   }
 
   @if (errorMessage) {
-    <p>{{ errorMessage }}</p>
+    <p class="error-msg">{{ errorMessage }}</p>
   }
 
   @if (!isLoading && !errorMessage && searchedWord) {

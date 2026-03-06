@@ -1,7 +1,7 @@
 <section>
   <h2>AI Chat</h2>
 
-  <p>Session: {{ sessionId }}</p>
+  <p class="session-label">Session: {{ sessionId }}</p>
 
   <div class="messages">
     @if (isLoadingHistory) {
@@ -24,10 +24,10 @@
   </form>
 
   @if (form.controls.message.touched && form.controls.message.hasError('required')) {
-    <p>Message is required.</p>
+    <p class="validation-error">Message is required.</p>
   }
 
   @if (errorMessage) {
-    <p>{{ errorMessage }}</p>
+    <p class="error-msg">{{ errorMessage }}</p>
   }
 </section>

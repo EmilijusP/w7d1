@@ -1,10 +1,39 @@
 section {
-  display: block;
+  display: grid;
+  gap: var(--space-md);
 }
 
 form {
   display: grid;
-  gap: 0.5rem;
-  max-width: 26rem;
-  margin-bottom: 0.75rem;
+  gap: var(--space-sm);
+  max-width: 28rem;
+  background: var(--color-bg-card);
+  padding: var(--space-lg);
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-sm);
+}
+
+form button {
+  justify-self: start;
+  margin-top: var(--space-2xs);
+}
+
+.validation-error {
+  color: var(--color-danger);
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-semibold);
+}
+
+.success-msg {
+  color: var(--color-success);
+  font-weight: var(--font-weight-semibold);
+  font-size: var(--font-size-sm);
+}
+
+.error-msg {
+  color: var(--color-danger);
+  background: rgba(214, 48, 49, 0.08);
+  padding: var(--space-xs) var(--space-sm);
+  border-radius: var(--radius-sm);
+  font-size: var(--font-size-sm);
 }

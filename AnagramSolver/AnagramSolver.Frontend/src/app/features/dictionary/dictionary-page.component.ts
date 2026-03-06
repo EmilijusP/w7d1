@@ -1,6 +1,5 @@
 import { CommonModule } from '@angular/common';
 import { ChangeDetectorRef, Component, OnInit, inject } from '@angular/core';
-import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
 import { firstValueFrom } from 'rxjs';
 
@@ -12,7 +11,7 @@ import { mapApiError } from '../../core/utils/map-api-error';
 
 @Component({
   selector: 'app-dictionary-page',
-  imports: [CommonModule, FormsModule],
+  imports: [CommonModule],
   templateUrl: './dictionary-page.component.html',
   styleUrl: './dictionary-page.component.css'
 })
@@ -29,7 +28,6 @@ export class DictionaryPageComponent implements OnInit {
   items: WordModel[] = [];
   pagination: PaginationResponse | null = null;
 
-  fileName = environment.defaultDownloadFileName;
   isDownloading = false;
 
   ngOnInit(): void {
@@ -88,23 +86,18 @@ export class DictionaryPageComponent implements OnInit {
   }
 
   async download(): Promise<void> {
-    const normalizedFileName = this.fileName.trim();
-
-    if (!normalizedFileName) {
-      this.errorMessage = 'File name is required for download.';
-      return;
-    }
+    const fileName = 'zodynas.txt';
 
     this.isDownloading = true;
     this.errorMessage = null;
 
     try {
-      const file = await firstValueFrom(this.wordsApi.downloadDictionaryFile(normalizedFileName));
+      const file = await firstValueFrom(this.wordsApi.downloadDictionaryFile(fileName));
       const objectUrl = URL.createObjectURL(file);
       const anchor = document.createElement('a');
 
       anchor.href = objectUrl;
-      anchor.download = normalizedFileName;
+      anchor.download = fileName;
       anchor.click();
 
       URL.revokeObjectURL(objectUrl);
