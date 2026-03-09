@@ -100,6 +100,5 @@ while (true)
         Console.Write(chunk.Text);
     }
     Console.WriteLine("\n");
-    var response = await workflowAgent.RunAsync(input);
 
 }
