@@ -1,6 +1,7 @@
 ﻿using AgentFrameworkDemo;
 using Microsoft.Agents.AI;
 using Microsoft.Agents.AI.Workflows;
+using Microsoft.Agents.AI.Workflows.Specialized;
 using Microsoft.Extensions.AI;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Identity.Client;
@@ -45,42 +46,68 @@ var anagramTools = new AnagramTools();
 
 //var workflow = AgentWorkflowBuilder.BuildSequential(agents);
 
-//var workflowAgent = workflow.AsAIAgent(name: "AnagramPipeline");
 
 // === HANDOFF === \\
-var triageAgent = chatClient.AsAIAgent(
-    name: "Triage",
-    instructions: "Tu esi registratūros agentas (Triage). Tavo vienintelis tikslas - nukreipti vartotoją pas tinkamą specialistą. " +
-                  "Vadovaukis šiomis taisyklėmis: " +
-                  "1. Jei vartotojas prašo surasti ANAGRAMĄ, VISADA nukreipk jį pas 'Anagrams' agentą. " +
-                  "2. Jei vartotojas klausia, KIEK IŠ VISO YRA ŽODŽIŲ, arba prašo SURASTI ŽODŽIUS IŠ TAM TIKRO RAIDŽIŲ SKAIČIAUS (pvz., 6 raidžių), VISADA nukreipk jį pas 'Analysis' agentą. " +
-                  "Niekada nebandyk pats atsakyti į klausimus, neieškok žodžių ir neklausk patikslinančių klausimų. Tiesiog iškviesk nukreipimo įrankį."
+//var triageAgent = chatClient.AsAIAgent(
+//    name: "Triage",
+//    instructions: "Tu esi registratūros agentas (Triage). Tavo vienintelis tikslas - nukreipti vartotoją pas tinkamą specialistą. " +
+//                  "Vadovaukis šiomis taisyklėmis: " +
+//                  "1. Jei vartotojas prašo surasti ANAGRAMĄ, VISADA nukreipk jį pas 'Anagrams' agentą. " +
+//                  "2. Jei vartotojas klausia, KIEK IŠ VISO YRA ŽODŽIŲ, arba prašo SURASTI ŽODŽIUS IŠ TAM TIKRO RAIDŽIŲ SKAIČIAUS (pvz., 6 raidžių), VISADA nukreipk jį pas 'Analysis' agentą. " +
+//                  "Niekada nebandyk pats atsakyti į klausimus, neieškok žodžių ir neklausk patikslinančių klausimų. Tiesiog iškviesk nukreipimo įrankį."
+//);
+
+//var anagramsAgent = chatClient.AsAIAgent(
+//    name: "Anagrams",
+//    instructions: "Tu esi Anagramų specialistas. Naudok FindAnagrams įrankį, kad surastum vartotojui anagramas.",
+//    tools: [
+//        AIFunctionFactory.Create(anagramTools.FindAnagrams),
+//    ]
+//);
+
+//var analysisAgent = chatClient.AsAIAgent(
+//    name: "Analysis",
+//    instructions: "Tu esi Žodžių analizės specialistas. Naudok GetWordCount ir FilterByLength įrankius atsakinėti į klausimus. ",
+//    tools: [
+//        AIFunctionFactory.Create(anagramTools.GetWordCount),
+//        AIFunctionFactory.Create(anagramTools.FilterByLength),
+//    ]
+//);
+
+//var workflow = AgentWorkflowBuilder.CreateHandoffBuilderWith(triageAgent)
+//    .WithHandoffs(triageAgent, [analysisAgent, anagramsAgent])
+//    .WithHandoff(analysisAgent, triageAgent)
+//    .WithHandoff(anagramsAgent, triageAgent)
+//    .Build();
+
+
+// === GROUP CHAT === \\
+var hostAgent = chatClient.AsAIAgent(
+    name: "Vedejas",
+    instructions: "Tu esi žodžių žaidimo vedėjas. Tavo tikslas - pasisveikinti ir pateikti vieną žodį savo nuožiūra. "
 );
 
-var anagramsAgent = chatClient.AsAIAgent(
-    name: "Anagrams",
-    instructions: "Tu esi Anagramų specialistas. Naudok FindAnagrams įrankį, kad surastum vartotojui anagramas.",
-    tools: [
-        AIFunctionFactory.Create(anagramTools.FindAnagrams),
-    ]
+var humanPlayerAgent = chatClient.AsAIAgent(
+    name: "Antanas",
+    instructions: "Tu esi paprastas žaidėjas. Išgirdęs vedėjo žodį, bandyk atspėti anagramą. " +
+                  "Gali suklysti arba sugalvoti nesąmonę (pvz., 'sula' -> 'lasu'). " +
+                  "Kalbėk trumpai, būk labai entuziastingas."
 );
 
-var analysisAgent = chatClient.AsAIAgent(
-    name: "Analysis",
-    instructions: "Tu esi Žodžių analizės specialistas. Naudok GetWordCount ir FilterByLength įrankius atsakinėti į klausimus. ",
-    tools: [
-        AIFunctionFactory.Create(anagramTools.GetWordCount),
-        AIFunctionFactory.Create(anagramTools.FilterByLength),
-    ]
+var robotPlayerAgent = chatClient.AsAIAgent(
+    name: "Robotas",
+    instructions: "Tu esi AI robotas-ekspertas. Naudok FindAnagrams įrankį rasti anagramas vedėjo žodžiui. " +
+                  "Parodyk rastas anagramas ir patvirtink jei Antanas atspėjo teisingai." +
+                  "Kalbėk kaip šaltas, logiškas robotas.",
+    tools: [AIFunctionFactory.Create(anagramTools.FindAnagrams)]
 );
 
-var workflow = AgentWorkflowBuilder.CreateHandoffBuilderWith(triageAgent)
-    .WithHandoffs(triageAgent, [analysisAgent, anagramsAgent])
-    .WithHandoff(analysisAgent, triageAgent)
-    .WithHandoff(anagramsAgent, triageAgent)
+var workflow = AgentWorkflowBuilder
+    .CreateGroupChatBuilderWith(agents => new RoundRobinGroupChatManager(agents) { MaximumIterationCount = 3 })
+    .AddParticipants([hostAgent, humanPlayerAgent, robotPlayerAgent])
     .Build();
 
-var workflowAgent = workflow.AsAIAgent(name: "HandoffPipeline");
+var workflowAgent = workflow.AsAIAgent(name: "AnagramPipeline");
 
 
 Console.WriteLine("Įveskite žodį anagramų paieškai arba rašykite 'exit' norėdami baigti.");
@@ -95,10 +122,29 @@ while (true)
         break;
     }
 
+    // === SEQUENTIAL, HANDOFF === \\
+    //await foreach (var chunk in workflowAgent.RunStreamingAsync(input))
+    //{
+    //    Console.Write(chunk.Text);
+    //}
+
+    // === GROUP CHAT === \\
+    string? lastAgent = null;
+
     await foreach (var chunk in workflowAgent.RunStreamingAsync(input))
     {
+        var agentName = string.IsNullOrWhiteSpace(chunk.AuthorName) ? chunk.Role.ToString() : chunk.AuthorName;
+
+        if (!string.Equals(lastAgent, agentName, StringComparison.Ordinal))
+        {
+            Console.Write($"\n[{agentName}] ");
+            lastAgent = agentName;
+        }
+
         Console.Write(chunk.Text);
     }
-    Console.WriteLine("\n");
 
+
+
+    Console.WriteLine("\n");
 }
