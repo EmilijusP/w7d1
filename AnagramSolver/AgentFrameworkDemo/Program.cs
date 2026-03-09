@@ -1,5 +1,6 @@
 ﻿using AgentFrameworkDemo;
 using Microsoft.Agents.AI;
+using Microsoft.Agents.AI.Workflows;
 using Microsoft.Extensions.AI;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Identity.Client;
@@ -18,18 +19,34 @@ var chatClient = openAiClient.GetChatClient(config["OpenAI:Model"]!);
 
 var anagramTools = new AnagramTools();
 
-var agent = chatClient.AsAIAgent(
-    name: "AnagramSolverAgent",
-    instructions: "Tu esi protingas AI asistentas. Tavo specializacija: spręsti anagramas ir teikti informaciją apie laiką. Naudok turimus įrankius.",
-    tools:
-    [
-        AIFunctionFactory.Create(anagramTools.FindAnagrams),
-        AIFunctionFactory.Create(anagramTools.GetWordCount),
-        AIFunctionFactory.Create(anagramTools.FilterByLength)
-    ]
+var finder = chatClient.AsAIAgent(
+    name: "Finder",
+    instructions: "Tu esi paieškos robotas. Tavo darbas - surasti anagramas vartotojo nurodytam žodžiui. " +
+                  "Naudok FindAnagrams įrankį. Grąžink TIK rastų žodžių sąrašą, atskirtą kableliais. " +
+                  "Jei nieko nerandi, grąžink žodį 'NERASTA'.",
+    tools: [AIFunctionFactory.Create(anagramTools.FindAnagrams)]
 );
 
-Console.WriteLine("Užduokite klausimą arba rašykite 'exit' norėdami baigti.");
+var analyzer = chatClient.AsAIAgent(
+    name: "Analyzer",
+    instructions: "Tu esi analizatorius. Tu gauni žodžių sąrašą. " +
+                  "Tavo užduotis: surikiuoti žodžius pagal įdomumą, " +
+                  "keisčiausi žodžiai turi būti apačioje."
+);
+
+var presenter = chatClient.AsAIAgent(
+    name: "Presenter",
+    instructions: "Tu esi pranešėjas. Tu gauni sausą analizės tekstą. " +
+                  "Tavo darbas - pateikti jį vartotojui labai patraukliai, naudojant Markdown formatavimą."
+);
+
+var agents = new List<AIAgent> { finder, analyzer, presenter };
+
+var workflow = AgentWorkflowBuilder.BuildSequential(agents);
+
+var workflowAgent = workflow.AsAIAgent(name: "AnagramPipeline");
+
+Console.WriteLine("Įveskite žodį anagramų paieškai arba rašykite 'exit' norėdami baigti.");
 
 while (true)
 {
@@ -41,7 +58,12 @@ while (true)
         break;
     }
 
-    var response = await agent.RunAsync(input);
+    await foreach (var chunk in workflowAgent.RunStreamingAsync(input))
+    {
+        Console.Write(chunk.Text);
+    }
+    Console.WriteLine("\n");
 
-    Console.WriteLine($"\nAsistentas: {response}\n");
+    //var response = await workflowAgent.RunAsync(input);
+    //Console.WriteLine($"\nAsistentas: {response}\n");
 }
