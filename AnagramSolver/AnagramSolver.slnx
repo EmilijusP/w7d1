@@ -1,10 +1,11 @@
 <Solution>
   <Folder Name="/TestProjects/">
+    <Project Path="AnagramSolver.Mcp.Tests/AnagramSolver.Mcp.Tests.csproj" />
     <Project Path="AnagramSolver.WebApp.Tests/AnagramSolver.WebApp.Tests.csproj" Id="4141f0ec-983a-4f71-ac5f-60d26b0f7906" />
     <Project Path="AngaramSolver.BusinessLogic.Tests/AnagramSolver.BusinessLogic.Tests.csproj" />
-    <Project Path="AnagramSolver.Mcp.Tests/AnagramSolver.Mcp.Tests.csproj" />
   </Folder>
   <Project Path="AgentDemo/AgentDemo.csproj" />
+  <Project Path="AgentFrameworkDemo/AgentFrameworkDemo.csproj" Id="10ca9dd6-b6d5-41f6-b4a3-55876cd9953f" />
   <Project Path="AnagramSolver.Api/AnagramSolver.Api.csproj" Id="94e7d1f0-41b4-442f-aca5-ba630bd02fbc" />
   <Project Path="AnagramSolver.BusinessLogic/AnagramSolver.BusinessLogic.csproj" />
   <Project Path="AnagramSolver.Cli/AnagramSolver.Cli.csproj" />
@@ -12,7 +13,7 @@
   <Project Path="AnagramSolver.Dapper/AnagramSolver.Dapper.csproj" Id="6d699bf3-8040-4743-9143-5040a724bc89" />
   <Project Path="AnagramSolver.EF.CodeFirst/AnagramSolver.EF.CodeFirst.csproj" Id="ca3469ff-81a9-43a3-b1f7-42c6294885fd" />
   <Project Path="AnagramSolver.EF.DatabaseFirst/AnagramSolver.EF.DatabaseFirst.csproj" Id="1ae971da-c435-484b-9fa5-e271d2ca8c67" />
-  <Project Path="AnagramSolver.WebApp/AnagramSolver.WebApp.csproj" Id="bd7204a8-ac3f-44b6-a146-9538bb95c746" />
   <Project Path="AnagramSolver.Mcp/AnagramSolver.Mcp.csproj" />
+  <Project Path="AnagramSolver.WebApp/AnagramSolver.WebApp.csproj" Id="bd7204a8-ac3f-44b6-a146-9538bb95c746" />
   <Project Path="GenericsAndDelegatesTask/GenericsAndDelegatesTask.csproj" Id="39f223cc-a6fc-4284-82e5-abb93c7fa517" />
 </Solution>
